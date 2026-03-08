@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/listings_provider.dart';
 import '../../theme.dart';
-import '../directory/directory_screen.dart';
-import '../listings/my_listings_screen.dart';
-import '../map/map_view_screen.dart';
-import '../settings/settings_screen.dart';
+import 'directory/directory_screen.dart';
+import 'listings/my_listings_screen.dart';
+import 'map/map_view_screen.dart';
+import 'settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
