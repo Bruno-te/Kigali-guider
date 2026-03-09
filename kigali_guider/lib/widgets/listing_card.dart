@@ -47,64 +47,56 @@ class ListingCard extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          listing.name,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (listing.rating > 0)
-                        Row(
-                          children: [
-                            const Icon(Icons.star, color: AppTheme.accent, size: 14),
-                            const SizedBox(width: 3),
-                            Text(
-                              listing.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: AppTheme.accent,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
+                  Text(
+                    listing.name,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  _StarRating(rating: listing.rating),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          listing.address,
+                      if (listing.rating > 0) ...[
+                        Text(
+                          listing.rating.toStringAsFixed(1),
                           style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 12,
+                            color: AppTheme.accent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        _StarRating(rating: listing.rating, size: 14),
+                        const SizedBox(width: 8),
+                      ],
                       if (showDistance && distanceKm != null)
                         Text(
                           '${distanceKm!.toStringAsFixed(1)} km',
                           style: const TextStyle(
                             color: AppTheme.textMuted,
-                            fontSize: 12,
+                            fontSize: 13,
                           ),
                         ),
                     ],
                   ),
+                  if (listing.address.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      listing.address,
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -30,9 +30,13 @@ class ListingsService {
   Stream<List<Listing>> getMyListings(String uid) {
     return _listingsRef
         .where('createdBy', isEqualTo: uid)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => Listing.fromFirestore(d)).toList());
+        .map((snap) {
+          final list = snap.docs.map((d) => Listing.fromFirestore(d)).toList();
+          // Sort client-side to avoid requiring a composite Firestore index.
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        });
   }
 
   // Create a listing

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/listing.dart';
 import '../../providers/listings_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -48,6 +52,82 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
     _latController.dispose();
     _lngController.dispose();
     super.dispose();
+  }
+
+  Future<void> _useCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showSnack('Turn on location services to use this.');
+        return;
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) {
+        _showSnack('Location permission is required.');
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
+      setState(() {
+        _latController.text = pos.latitude.toStringAsFixed(6);
+        _lngController.text = pos.longitude.toStringAsFixed(6);
+      });
+      _showSnack('Location filled from your current position.');
+    } catch (_) {
+      _showSnack('Could not get your location. Try again.');
+    }
+  }
+
+  Future<void> _fillFromAddress() async {
+    final address = _addressController.text.trim();
+    if (address.isEmpty) {
+      _showSnack('Enter an address first.');
+      return;
+    }
+    if (kIsWeb) {
+      // The geocoding plugin uses native platform geocoders (Android/iOS) and
+      // isn't available on web. Open Google Maps search as a fallback.
+      await _openMapsSearch(address);
+      _showSnack('Web can’t auto-fill coordinates. Google Maps opened to help you find the place.');
+      return;
+    }
+    try {
+      // Adding country improves hit rate for vague inputs.
+      final query = address.toLowerCase().contains('rwanda') ? address : '$address, Rwanda';
+      final locations = await locationFromAddress(query);
+      if (locations.isEmpty) {
+        _showSnack('Could not find that address. Try adding “Kigali, Rwanda”.');
+        return;
+      }
+      final loc = locations.first;
+      setState(() {
+        _latController.text = loc.latitude.toStringAsFixed(6);
+        _lngController.text = loc.longitude.toStringAsFixed(6);
+      });
+      _showSnack('Coordinates filled from address.');
+    } catch (_) {
+      _showSnack('Could not look up that address. Try a more specific address.');
+    }
+  }
+
+  Future<void> _openMapsSearch(String query) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   Future<void> _handleSubmit() async {
@@ -189,7 +269,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
             _SectionLabel('Location Coordinates'),
             const SizedBox(height: 4),
             const Text(
-              'Enter the GPS coordinates of the location (Kigali center: -1.9441, 30.0619)',
+              'You can type coordinates, use your current location, or let the app find them from the address.',
               style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -221,6 +301,28 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                       if (double.tryParse(v) == null) return 'Invalid';
                       return null;
                     },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: _useCurrentLocation,
+                  icon: const Icon(Icons.my_location, color: AppTheme.accent, size: 18),
+                  label: const Text(
+                    'Use my location',
+                    style: TextStyle(color: AppTheme.accent),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: _fillFromAddress,
+                  icon: const Icon(Icons.place, color: AppTheme.accent, size: 18),
+                  label: const Text(
+                    'From address',
+                    style: TextStyle(color: AppTheme.accent),
                   ),
                 ),
               ],

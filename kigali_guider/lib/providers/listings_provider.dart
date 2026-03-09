@@ -65,6 +65,10 @@ class ListingsProvider extends ChangeNotifier {
         _myListings = listings;
         notifyListeners();
       },
+      onError: (e) {
+        _errorMessage = e.toString();
+        notifyListeners();
+      },
     );
   }
 

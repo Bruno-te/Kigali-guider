@@ -10,6 +10,31 @@ import '../listings/listing_detail_screen.dart';
 class MyListingsScreen extends StatelessWidget {
   const MyListingsScreen({super.key});
 
+  Future<bool> _confirmDelete(BuildContext context, String listingName) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardDark,
+        title: const Text('Delete Listing', style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text(
+          'Are you sure you want to delete "$listingName"?',
+          style: const TextStyle(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final listingsProvider = context.watch<ListingsProvider>();
@@ -71,27 +96,7 @@ class MyListingsScreen extends StatelessWidget {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   confirmDismiss: (_) async {
-                    return await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        backgroundColor: AppTheme.cardDark,
-                        title: const Text('Delete Listing', style: TextStyle(color: AppTheme.textPrimary)),
-                        content: Text(
-                          'Are you sure you want to delete "${listing.name}"?',
-                          style: const TextStyle(color: AppTheme.textSecondary),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      ),
-                    );
+                    return _confirmDelete(context, listing.name);
                   },
                   onDismissed: (_) async {
                     await listingsProvider.deleteListing(listing.id);
@@ -130,6 +135,30 @@ class MyListingsScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(Icons.edit, color: AppTheme.accent, size: 16),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: () async {
+                            final ok = await _confirmDelete(context, listing.name);
+                            if (!ok) return;
+                            await listingsProvider.deleteListing(listing.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Listing deleted'), backgroundColor: Colors.red),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.delete, color: Colors.red, size: 16),
                           ),
                         ),
                       ),

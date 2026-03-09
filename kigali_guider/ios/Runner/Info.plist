@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Kigali Guider uses your location to show nearby places and sort them by distance.</string>
 </dict>
 </plist>

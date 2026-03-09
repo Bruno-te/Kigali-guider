@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Listing {
@@ -93,11 +94,16 @@ class Listing {
     );
   }
 
+  /// Distance to a point in km (Haversine).
   double distanceTo(double userLat, double userLng) {
-    // Simple approximation in km
-    const double degToKm = 111.0;
-    final dLat = (latitude - userLat).abs() * degToKm;
-    final dLng = (longitude - userLng).abs() * degToKm * 0.85;
-    return (dLat * dLat + dLng * dLng) < 0 ? 0 : (dLat * dLat + dLng * dLng);
+    const double R = 6371; // Earth radius in km
+    final dLat = _toRad(latitude - userLat);
+    final dLon = _toRad(longitude - userLng);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRad(userLat)) * cos(_toRad(latitude)) * sin(dLon / 2) * sin(dLon / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return R * c;
   }
+
+  static double _toRad(double deg) => deg * pi / 180;
 }
