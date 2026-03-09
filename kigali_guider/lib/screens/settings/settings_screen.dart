@@ -93,6 +93,33 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      if (auth.user?.emailVerified != true) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            TextButton(
+                              onPressed: () async {
+                                await auth.resendEmailVerification();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Verification email sent. Check your inbox.'),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Resend verification email'),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: () async {
+                                await auth.refreshCurrentUser();
+                              },
+                              child: const Text('I\'ve verified – refresh'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

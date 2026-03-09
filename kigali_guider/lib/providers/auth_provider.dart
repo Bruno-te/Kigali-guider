@@ -92,6 +92,18 @@ class AuthProvider extends ChangeNotifier {
     await _authService.sendPasswordResetEmail(email);
   }
 
+  Future<void> resendEmailVerification() async {
+    await _authService.resendEmailVerification();
+  }
+
+  Future<void> refreshCurrentUser() async {
+    final updated = await _authService.reloadCurrentUser();
+    if (updated != null) {
+      _user = updated;
+      notifyListeners();
+    }
+  }
+
   Future<void> updateNotificationSettings(bool enabled) async {
     if (_userProfile == null) return;
     final updated = _userProfile!.copyWith(notificationsEnabled: enabled);
