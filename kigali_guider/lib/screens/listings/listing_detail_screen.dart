@@ -41,9 +41,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
   Future<void> _launchMaps() async {
     final lat = widget.listing.latitude;
     final lng = widget.listing.longitude;
-    final name = Uri.encodeComponent(widget.listing.name);
+    // Use only coordinates so Maps routes to the exact listing location.
+    // (destination_place_id must be a Google Place ID, not a name.)
     final uri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=$name');
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
